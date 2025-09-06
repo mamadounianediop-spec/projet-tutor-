@@ -497,10 +497,17 @@
                                     <div class="text-sm text-gray-500 italic">Commune non définie</div>
                                     {% endif %}
                                     
+                                    {% if etablissement.zone %}
+                                    <div class="text-xs text-blue-600 flex items-center mt-1">
+                                        <i class="fas fa-map mr-1"></i>
+                                        Zone: {{ etablissement.zone }}
+                                    </div>
+                                    {% endif %}
+                                    
                                     {% if etablissement.latitude and etablissement.longitude %}
                                     <div class="text-xs text-green-600 flex items-center mt-1">
                                         <i class="fas fa-check-circle mr-1"></i>
-                                        Géolocalisé
+                                        Géolocalisé GPS
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1">
                                         {{ "%.4f"|format(etablissement.latitude) }}, {{ "%.4f"|format(etablissement.longitude) }}
@@ -508,7 +515,7 @@
                                     {% else %}
                                     <div class="text-xs text-orange-600 flex items-center mt-1">
                                         <i class="fas fa-exclamation-triangle mr-1"></i>
-                                        Non géolocalisé
+                                        Coordonnées GPS manquantes
                                     </div>
                                     {% endif %}
                                 </div>
