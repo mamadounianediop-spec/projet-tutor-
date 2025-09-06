@@ -371,7 +371,7 @@ function initCorpsChart() {
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Corps</label>
                 <select id="corps-filter" class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
-                    <option value="">👥 Tous les corps</option>
+                    <option value="">Tous les corps</option>
                     {% for corps in corps_list %}
                     <option value="{{ corps.corps }}">{{ corps.corps }}</option>
                     {% endfor %}
@@ -381,7 +381,7 @@ function initCorpsChart() {
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Fonction</label>
                 <select id="fonction-filter" class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
-                    <option value="">💼 Toutes les fonctions</option>
+                    <option value="">Toutes les fonctions</option>
                     {% for fonction in fonctions_list %}
                     <option value="{{ fonction.fonction }}">{{ fonction.fonction }}</option>
                     {% endfor %}
@@ -391,18 +391,18 @@ function initCorpsChart() {
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Genre</label>
                 <select id="genre-filter" class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
-                    <option value="">⚧ Tous les genres</option>
-                    <option value="M">👨 Masculin</option>
-                    <option value="F">👩 Féminin</option>
+                    <option value="">Tous les genres</option>
+                    <option value="M">Masculin</option>
+                    <option value="F">Féminin</option>
                 </select>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
                 <select id="statut-filter" class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
-                    <option value="">📊 Tous les statuts</option>
-                    <option value="affecte">✅ Affectés</option>
-                    <option value="non_affecte">❌ Non affectés</option>
+                    <option value="">Tous les statuts</option>
+                    <option value="affecte">Affectés</option>
+                    <option value="non_affecte">Non affectés</option>
                 </select>
             </div>
         </div>
