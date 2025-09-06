@@ -55,7 +55,7 @@ def index():
     
     # Paramètres de filtrage et pagination
     search = request.args.get('search', '').strip()
-    type_filter = request.args.get('type', '')
+    type_filter = request.args.get('type_etablissement', '')
     commune_filter = request.args.get('commune_id', '')
     statut_filter = request.args.get('statut', '')
     page = request.args.get('page', 1, type=int)
@@ -149,7 +149,7 @@ def index():
         ORDER BY type_etablissement
     """)
     
-    communes = execute_query("""
+    communes_list = execute_query("""
         SELECT id, nom
         FROM communes
         ORDER BY nom
@@ -159,11 +159,11 @@ def index():
                          stats=stats,
                          etablissements=etablissements,
                          types_etablissements=types_etablissements,
-                         communes=communes,
+                         communes_list=communes_list,
                          pagination=pagination,
                          filters={
                              'search': search,
-                             'type': type_filter,
+                             'type_etablissement': type_filter,
                              'commune_id': commune_filter,
                              'statut': statut_filter
                          })
