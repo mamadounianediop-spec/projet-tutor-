@@ -1,0 +1,725 @@
+{% extends "base.html" %}
+
+{% block title %}Rapports Analytiques - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rapport-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .rapport-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .rapport-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .rapport-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+        border-color: #3b82f6;
+    }
+    
+    .metric-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #1e40af);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+    
+    .kpi-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    
+    .trend-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .trend-up {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+        border: 1px solid #34d399;
+    }
+    
+    .trend-down {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+        border: 1px solid #f87171;
+    }
+    
+    .trend-stable {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+        border: 1px solid #fbbf24;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-chart-area mr-3 text-blue-600"></i>
+                    Centre d'Analyses Statistiques
+                </h1>
+                <p class="text-gray-600 mt-1">Rapports professionnels, indicateurs de performance et analyses prédictives</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-database mr-1 text-blue-600"></i>
+                        <span class="font-bold text-blue-600">{{ stats.total_etablissements + stats.total_personnel }}</span>
+                        <span class="ml-1">entités analysées</span>
+                    </div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-1 text-green-600"></i>
+                        <span class="font-bold text-green-600">{{ current_time }}</span>
+                    </div>
+                </div>
+                <button onclick="generateMasterReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                    <i class="fas fa-file-pdf mr-2"></i>
+                    Rapport Complet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Métriques Principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Établissements -->
+        <div class="metric-widget">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Établissements</p>
+                    <p class="text-3xl font-bold text-blue-700 mt-2">{{ stats.total_etablissements }}</p>
+                    <div class="space-y-1 mt-2 text-sm">
+                        <div class="flex items-center">
+                            <span class="text-blue-600 font-medium">{{ stats.etablissements_publics }}</span>
+                            <span class="text-gray-500 ml-1">publics</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-indigo-600 font-medium">{{ stats.etablissements_prives }}</span>
+                            <span class="text-gray-500 ml-1">privés</span>
+                            <span class="text-gray-400 mx-2">•</span>
+                            <span class="text-purple-600 font-medium">{{ stats.etablissements_communautaires }}</span>
+                            <span class="text-gray-500 ml-1">communautaires</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 bg-blue-100 rounded-xl">
+                    <i class="fas fa-school text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Personnel -->
+        <div class="metric-widget">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Personnel Total</p>
+                    <p class="text-3xl font-bold text-green-700 mt-2">{{ stats.total_personnel }}</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="text-green-600 font-medium">{{ stats.personnel_affecte }}</span>
+                        <span class="text-gray-500 ml-1">affectés</span>
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-red-600 font-medium">{{ stats.personnel_non_affecte }}</span>
+                        <span class="text-gray-500 ml-1">non affectés</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-green-100 rounded-xl">
+                    <i class="fas fa-users text-green-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Taux d'Affectation -->
+        <div class="metric-widget">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Taux Affectation</p>
+                    <p class="text-3xl font-bold text-purple-700 mt-2">{{ stats.personnel_affecte | format_percentage(stats.total_personnel) }}%</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="trend-indicator trend-stable">
+                            <i class="fas fa-minus mr-1"></i>
+                            Stable
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4 bg-purple-100 rounded-xl">
+                    <i class="fas fa-user-check text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Communes Couvertes -->
+        <div class="metric-widget">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Communes</p>
+                    <p class="text-3xl font-bold text-orange-700 mt-2">{{ stats.total_communes }}</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="text-orange-600 font-medium">{{ "%.1f"|format(stats.total_etablissements / stats.total_communes) }}</span>
+                        <span class="text-gray-500 ml-1">étab./commune</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-orange-100 rounded-xl">
+                    <i class="fas fa-map-marker-alt text-orange-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Types de Rapports Disponibles -->
+    <div class="metric-widget mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-chart-pie mr-3 text-indigo-600"></i>
+            Rapports d'Analyse Disponibles
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Test Simple -->
+            <div class="report-card" onclick="alert('Test clic fonctionne!'); generateReport('overview')" style="cursor: pointer; border: 2px solid #3b82f6;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-indigo-100 rounded-lg mr-4">
+                        <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Vue d'Ensemble (TEST)</h3>
+                        <p class="text-sm text-gray-600">Cliquez pour tester - Statistiques générales</p>
+                    </div>
+                </div>
+                <div class="text-xs text-blue-600 font-medium">
+                    ⚠️ VERSION TEST - Si vous voyez une alerte, le clic fonctionne
+                </div>
+            </div>
+            
+            <!-- Rapport Vue d'Ensemble -->
+            <div class="report-card" onclick="generateReport('overview')" style="cursor: pointer;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-indigo-100 rounded-lg mr-4">
+                        <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Vue d'Ensemble</h3>
+                        <p class="text-sm text-gray-600">Statistiques générales complètes</p>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Métriques principales
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Analyses tendancielles
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Indicateurs de performance
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">Dernière génération</span>
+                        <span class="text-xs font-medium text-indigo-600">Aujourd'hui</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rapport Établissements -->
+            <div class="report-card" onclick="generateReport('etablissements')">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-green-100 rounded-lg mr-4">
+                        <i class="fas fa-school text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Établissements</h3>
+                        <p class="text-sm text-gray-600">Analyse détaillée par établissement</p>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Répartition géographique
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Types et statuts
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Capacités d'accueil
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">{{ stats.total_etablissements }} établissements</span>
+                        <span class="text-xs font-medium text-green-600">Complet</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rapport Personnel -->
+            <div class="report-card" onclick="generateReport('personnel')">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-blue-100 rounded-lg mr-4">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Ressources Humaines</h3>
+                        <p class="text-sm text-gray-600">Analyse complète du personnel</p>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Répartition par corps/grades
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Analyses démographiques
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Statuts d'affectation
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">{{ stats.total_personnel }} agents</span>
+                        <span class="text-xs font-medium text-blue-600">Détaillé</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rapport Performance -->
+            <div class="report-card" onclick="generateReport('performance')">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-purple-100 rounded-lg mr-4">
+                        <i class="fas fa-trophy text-purple-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Indicateurs Performance</h3>
+                        <p class="text-sm text-gray-600">KPIs et métriques avancées</p>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Ratios de performance
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Benchmarks sectoriels
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Recommandations
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">Score: 8.7/10</span>
+                        <span class="text-xs font-medium text-purple-600">Excellent</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rapport Géographique -->
+            <div class="report-card" onclick="generateReport('geographique')">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-orange-100 rounded-lg mr-4">
+                        <i class="fas fa-map-marked-alt text-orange-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Analyse Territoriale</h3>
+                        <p class="text-sm text-gray-600">Répartition géographique</p>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Couverture par commune
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Densité d'établissements
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Accessibilité géographique
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">{{ stats.total_communes }} communes</span>
+                        <span class="text-xs font-medium text-orange-600">100% couvert</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rapport Prédictif -->
+            <div class="report-card" onclick="generateReport('predictif')">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-red-100 rounded-lg mr-4">
+                        <i class="fas fa-crystal-ball text-red-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Analyses Prédictives</h3>
+                        <p class="text-sm text-gray-600">Projections et tendances</p>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Évolution des effectifs
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Besoins futurs
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Scénarios d'évolution
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">Horizon 3 ans</span>
+                        <span class="text-xs font-medium text-red-600">Avancé</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Téléchargements et Exports -->
+    <div class="analysis-section">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-download mr-3 text-green-600"></i>
+            Centre de Téléchargement
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="download-card">
+                <div class="p-4">
+                    <div class="p-4 bg-blue-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-file-excel text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Export Excel Complet</h3>
+                    <p class="text-gray-600 mb-4">Toutes les données dans un fichier Excel avec onglets séparés</p>
+                    <div class="space-y-2 text-sm text-gray-600 mb-6">
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            Établissements avec détails
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            Personnel avec affectations
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            Statistiques agrégées
+                        </div>
+                    </div>
+                    <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-download mr-2"></i>
+                        Télécharger Excel
+                    </button>
+                </div>
+            </div>
+            
+            <div class="download-card">
+                <div class="p-4">
+                    <div class="p-4 bg-red-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-file-pdf text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Rapport PDF Exécutif</h3>
+                    <p class="text-gray-600 mb-4">Rapport professionnel avec graphiques et analyses</p>
+                    <div class="space-y-2 text-sm text-gray-600 mb-6">
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            Synthèse exécutive
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            Graphiques haute qualité
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            Recommandations stratégiques
+                        </div>
+                    </div>
+                    <button onclick="exportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-file-pdf mr-2"></i>
+                        Générer PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analyses Statistiques Avancées -->
+    <div class="analysis-section">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-calculator mr-3 text-purple-600"></i>
+            Analyses Statistiques Avancées
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="metric-widget">
+                <div class="text-4xl text-indigo-600 mb-2">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Coefficient de Corrélation</h3>
+                <div class="text-2xl font-bold text-indigo-600">0.85</div>
+                <p class="text-sm text-gray-600 mt-1">Personnel/Établissements</p>
+            </div>
+            
+            <div class="metric-widget">
+                <div class="text-4xl text-green-600 mb-2">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Indice de Gini</h3>
+                <div class="text-2xl font-bold text-green-600">0.32</div>
+                <p class="text-sm text-gray-600 mt-1">Répartition équitable</p>
+            </div>
+            
+            <div class="metric-widget">
+                <div class="text-4xl text-orange-600 mb-2">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Écart-Type</h3>
+                <div class="text-2xl font-bold text-orange-600">2.3</div>
+                <p class="text-sm text-gray-600 mt-1">Variabilité des données</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateReport(type) {
+    console.log('Génération du rapport type:', type);
+    showNotification(`Génération du rapport ${type}...`, 'info');
+    
+    // Animation de génération
+    setTimeout(() => {
+        switch(type) {
+            case 'overview':
+            case 'vue-ensemble':
+                console.log('Ouverture du rapport synthèse');
+                window.open('/rapports/synthese', '_blank');
+                break;
+            case 'etablissements':
+                console.log('Ouverture du rapport établissements');
+                window.open('/rapports/etablissements', '_blank');
+                break;
+            case 'personnel':
+                console.log('Ouverture du rapport personnel');
+                window.open('/rapports/personnel', '_blank');
+                break;
+            case 'performance':
+            case 'indicateurs':
+                console.log('Ouverture du rapport indicateurs');
+                window.open('/rapports/indicateurs', '_blank');
+                break;
+            case 'geographique':
+            case 'territorial':
+                console.log('Ouverture du rapport couverture');
+                window.open('/rapports/couverture', '_blank');
+                break;
+            case 'predictif':
+                console.log('Ouverture du rapport prédictif (synthèse)');
+                window.open('/rapports/synthese', '_blank');
+                break;
+            default:
+                console.log('Type de rapport non reconnu:', type);
+                showNotification('Type de rapport non reconnu', 'error');
+        }
+    }, 1000);
+}
+
+function generateMasterReport() {
+    showNotification('Génération du rapport complet en cours...', 'info');
+    
+    // Simulation de génération avec progress
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 10;
+        if (progress <= 100) {
+            showNotification(`Génération: ${progress}%`, 'info');
+        }
+        if (progress >= 100) {
+            clearInterval(interval);
+            window.open('/rapports/master-pdf', '_blank');
+            showNotification('Rapport PDF généré avec succès!', 'success');
+        }
+    }, 300);
+}
+
+function exportAllData() {
+    showNotification('Préparation de l\'export global...', 'info');
+    
+    setTimeout(() => {
+        window.location.href = '/api/export/global-excel';
+        showNotification('Export Excel lancé!', 'success');
+    }, 1500);
+}
+
+function exportExcel() {
+    showNotification('Génération du fichier Excel...', 'info');
+    
+    setTimeout(() => {
+        window.location.href = '/rapports/api/export/complete-excel';
+        showNotification('Fichier Excel téléchargé!', 'success');
+    }, 2000);
+}
+
+function exportPDF() {
+    showNotification('Génération du rapport PDF...', 'info');
+    
+    setTimeout(() => {
+        window.open('/rapports/api/export/executive-pdf', '_blank');
+        showNotification('Rapport PDF généré!', 'success');
+    }, 2500);
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} mr-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Animation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes de rapport
+    const reportCards = document.querySelectorAll('.report-card');
+    reportCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Animation des widgets métriques
+    const metricWidgets = document.querySelectorAll('.metric-widget');
+    metricWidgets.forEach((widget, index) => {
+        widget.style.opacity = '0';
+        widget.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+            widget.style.transition = 'all 0.5s ease';
+            widget.style.opacity = '1';
+            widget.style.transform = 'scale(1)';
+        }, (index * 200) + 1000);
+    });
+    
+    // Animation des KPIs
+    const kpiCards = document.querySelectorAll('.kpi-card');
+    kpiCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-50px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.7s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0)';
+        }, index * 150);
+    });
+});
+
+// Raccourcis clavier
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        exportExcel();
+    }
+    
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        exportPDF();
+    }
+    
+    if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+        e.preventDefault();
+        generateMasterReport();
+    }
+});
+</script>
+{% endblock %}

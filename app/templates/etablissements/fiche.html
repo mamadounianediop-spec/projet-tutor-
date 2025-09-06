@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Fiche {{ etablissement.nom }} - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        body { -webkit-print-color-adjust: exact; }
+    }
+    
+    .fiche-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #374151;
+        width: 200px;
+        flex-shrink: 0;
+    }
+    
+    .info-value {
+        color: #111827;
+    }
+    
+    .personnel-table {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Boutons d'action -->
+    <div class="no-print mb-6 flex justify-between items-center">
+        <button onclick="window.history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour
+        </button>
+        <div class="flex gap-3">
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-print mr-2"></i>
+                Imprimer
+            </button>
+            <a href="{{ url_for('etablissements.detail', etablissement_id=etablissement.id) }}" 
+               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-eye mr-2"></i>
+                Vue Détaillée
+            </a>
+        </div>
+    </div>
+
+    <!-- En-tête de la fiche -->
+    <div class="fiche-header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">{{ etablissement.nom or 'Nom non défini' }}</h1>
+                <div class="flex items-center space-x-4 text-blue-100">
+                    {% if etablissement.code_etablissement %}
+                    <span><i class="fas fa-barcode mr-1"></i> {{ etablissement.code_etablissement }}</span>
+                    {% endif %}
+                    {% if etablissement.type_etablissement %}
+                    <span><i class="fas fa-graduation-cap mr-1"></i> {{ etablissement.type_etablissement }}</span>
+                    {% endif %}
+                    {% if etablissement.statut %}
+                    <span><i class="fas fa-tag mr-1"></i> {{ etablissement.statut }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-blue-100 text-sm">Fiche générée le</div>
+                <div class="text-xl font-semibold">{{ moment().format('DD/MM/YYYY') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations générales -->
+    <div class="info-section">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+            Informations Générales
+        </h2>
+        
+        <div class="info-row">
+            <div class="info-label">Nom de l'établissement:</div>
+            <div class="info-value">{{ etablissement.nom or 'Non défini' }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Code établissement:</div>
+            <div class="info-value">{{ etablissement.code_etablissement or 'Non défini' }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Type d'établissement:</div>
+            <div class="info-value">{{ etablissement.type_etablissement or 'Non défini' }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Statut:</div>
+            <div class="info-value">
+                {% if etablissement.statut %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if etablissement.statut == 'Public' %}bg-purple-100 text-purple-800
+                        {% elif etablissement.statut == 'Privé' %}bg-blue-100 text-blue-800
+                        {% else %}bg-orange-100 text-orange-800{% endif %}">
+                        {{ etablissement.statut }}
+                    </span>
+                {% else %}
+                    Non défini
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Commune:</div>
+            <div class="info-value">{{ etablissement.commune_nom or 'Non définie' }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Arrondissement:</div>
+            <div class="info-value">{{ etablissement.arrondissement or 'Non défini' }}</div>
+        </div>
+        
+        {% if etablissement.adresse %}
+        <div class="info-row">
+            <div class="info-label">Adresse:</div>
+            <div class="info-value">{{ etablissement.adresse }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Contacts et Direction -->
+    <div class="info-section">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-address-book mr-2 text-green-600"></i>
+            Contacts et Direction
+        </h2>
+        
+        <div class="info-row">
+            <div class="info-label">Directeur:</div>
+            <div class="info-value">{{ etablissement.directeur or 'Non défini' }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Contact principal:</div>
+            <div class="info-value">{{ etablissement.contact_1 or 'Non défini' }}</div>
+        </div>
+        
+        {% if etablissement.contact_2 %}
+        <div class="info-row">
+            <div class="info-label">Contact secondaire:</div>
+            <div class="info-value">{{ etablissement.contact_2 }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="info-row">
+            <div class="info-label">Email directeur:</div>
+            <div class="info-value">{{ etablissement.email_directeur or 'Non défini' }}</div>
+        </div>
+    </div>
+
+    <!-- Géolocalisation -->
+    {% if etablissement.coordonnees_x and etablissement.coordonnees_y %}
+    <div class="info-section">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-map-marker-alt mr-2 text-red-600"></i>
+            Géolocalisation
+        </h2>
+        
+        <div class="info-row">
+            <div class="info-label">Latitude:</div>
+            <div class="info-value">{{ etablissement.coordonnees_y }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Longitude:</div>
+            <div class="info-value">{{ etablissement.coordonnees_x }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistiques du Personnel -->
+    {% if stats_personnel %}
+    <div class="info-section">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-users mr-2 text-purple-600"></i>
+            Statistiques du Personnel
+        </h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ stats_personnel.total }}</div>
+                <div class="text-sm text-gray-600">Total Personnel</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{{ stats_personnel.hommes }}</div>
+                <div class="text-sm text-gray-600">Hommes</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-pink-600">{{ stats_personnel.femmes }}</div>
+                <div class="text-sm text-gray-600">Femmes</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-orange-600">{{ stats_personnel.nombre_corps }}</div>
+                <div class="text-sm text-gray-600">Corps Différents</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Liste du Personnel -->
+    {% if personnel %}
+    <div class="personnel-table">
+        <div class="bg-gray-50 px-6 py-3 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-list mr-2 text-indigo-600"></i>
+                Personnel de l'Établissement ({{ personnel|length }})
+            </h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom & Prénom</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Genre</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Corps</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fonction</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for agent in personnel %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">{{ agent.nom or '' }} {{ agent.prenom or '' }}</div>
+                            {% if agent.diplome_academique %}
+                                <div class="text-xs text-gray-500">{{ agent.diplome_academique }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if agent.genre %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {% if agent.genre in ['M', 'H'] %}bg-blue-100 text-blue-800{% else %}bg-pink-100 text-pink-800{% endif %}">
+                                    {% if agent.genre in ['M', 'H'] %}Homme{% else %}Femme{% endif %}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ agent.corps or 'Non défini' }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ agent.grade or 'Non défini' }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ agent.fonction or 'Non définie' }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ agent.contact or 'Non défini' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="info-section text-center">
+        <div class="text-gray-500 py-8">
+            <i class="fas fa-users text-4xl mb-4"></i>
+            <p>Aucun personnel affecté à cet établissement</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="no-print mt-8 text-center text-gray-500">
+        <p>Fiche générée automatiquement par le système IEF Louga</p>
+    </div>
+</div>
+
+<script>
+// Formatage de la date
+document.addEventListener('DOMContentLoaded', function() {
+    const dateElements = document.querySelectorAll('.current-date');
+    const now = new Date();
+    const formatted = now.toLocaleDateString('fr-FR');
+    dateElements.forEach(el => el.textContent = formatted);
+});
+</script>
+{% endblock %}

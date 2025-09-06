@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Indicateurs de Performance - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .kpi-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+    }
+    
+    .analysis-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- En-tête -->
+    <div class="report-header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Indicateurs de Performance
+                </h1>
+                <p class="text-orange-100 mt-2">KPIs et métriques clés de l'IEF</p>
+            </div>
+            <button onclick="window.print()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                <i class="fas fa-print mr-2"></i>
+                Imprimer
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs Principaux -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="kpi-card">
+            <div class="text-3xl font-bold text-blue-600">{{ donnees.kpis.ratio_personnel_etablissement }}</div>
+            <div class="text-sm text-gray-600">Ratio Personnel/Établissement</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="text-3xl font-bold text-green-600">{{ donnees.kpis.taux_public }}%</div>
+            <div class="text-sm text-gray-600">Taux d'Établissements Publics</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="text-3xl font-bold text-purple-600">{{ donnees.kpis.taux_feminisation }}%</div>
+            <div class="text-sm text-gray-600">Taux de Féminisation</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="text-3xl font-bold text-orange-600">{{ donnees.kpis.taux_geolocalisation }}%</div>
+            <div class="text-sm text-gray-600">Taux de Géolocalisation</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="text-3xl font-bold text-indigo-600">{{ donnees.kpis.taux_affectation }}%</div>
+            <div class="text-sm text-gray-600">Taux d'Affectation</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="text-3xl font-bold text-teal-600">{{ donnees.kpis.ratio_etablissement_commune }}</div>
+            <div class="text-sm text-gray-600">Ratio Établissement/Commune</div>
+        </div>
+    </div>
+
+    <!-- Évolution des KPIs -->
+    <div class="analysis-card">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Évolution des Indicateurs Clés</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Indicateur</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valeur 2023</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Objectif</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tendance</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in donnees.evolution_kpis %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium">{{ item.indicateur }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-900">{{ item.valeur_2023 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-blue-600">{{ item.objectif }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if item.tendance == 'amélioration' %}bg-green-100 text-green-800
+                                {% elif item.tendance == 'stable' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ item.tendance }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Benchmarks -->
+    <div class="analysis-card">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Benchmarks par Type d'Établissement</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for item in donnees.benchmarks %}
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-medium text-gray-900">{{ item.type_etablissement }}</h4>
+                <div class="mt-2 space-y-1">
+                    <div class="text-2xl font-bold text-blue-600">{{ item.nombre }}</div>
+                    <div class="text-sm text-gray-500">établissements ({{ item.pourcentage_total }}%)</div>
+                    <div class="text-sm text-gray-600">Personnel moyen: {{ item.personnel_moyen }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

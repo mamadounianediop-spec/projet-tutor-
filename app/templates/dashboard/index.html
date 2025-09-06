@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-card.primary::before { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+    .dashboard-card.success::before { background: linear-gradient(135deg, #10b981, #047857); }
+    .dashboard-card.warning::before { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .dashboard-card.danger::before { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .dashboard-card.purple::before { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .dashboard-card.indigo::before { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .metric-icon.primary { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; }
+    .metric-icon.success { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #047857; }
+    .metric-icon.warning { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706; }
+    .metric-icon.danger { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #dc2626; }
+    .metric-icon.purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
+    .metric-icon.indigo { background: linear-gradient(135deg, #e0e7ff, #c7d2fe); color: #4f46e5; }
+    
+    .analytics-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .analytics-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    
+    .action-btn {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-color: #3b82f6;
+        color: #3b82f6;
+        text-decoration: none;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .status-excellent { 
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); 
+        color: #065f46; 
+        border: 1px solid #34d399;
+    }
+    
+    .status-good { 
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
+        color: #1e40af; 
+        border: 1px solid #60a5fa;
+    }
+    
+    .status-warning { 
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+        color: #d97706; 
+        border: 1px solid #fbbf24;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #1e40af);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-tachometer-alt mr-3 text-blue-600"></i>
+                    Tableau de Bord IEF Louga
+                </h1>
+                <p class="text-gray-600 mt-1">Vue d'ensemble complète du système éducatif de Louga</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-school mr-1 text-blue-600"></i>
+                        <span class="font-bold text-blue-600">{{ stats.total_etablissements }}</span>
+                        <span class="ml-1">établissements</span>
+                    </div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <div class="flex items-center">
+                        <i class="fas fa-users mr-1 text-green-600"></i>
+                        <span class="font-bold text-green-600">{{ stats.total_personnel }}</span>
+                        <span class="ml-1">agents</span>
+                    </div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <div class="flex items-center">
+                        <i class="fas fa-map-marker-alt mr-1 text-purple-600"></i>
+                        <span class="font-bold text-purple-600">{{ stats.total_communes or 34 }}</span>
+                        <span class="ml-1">communes</span>
+                    </div>
+                </div>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                    <i class="fas fa-sync mr-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Métriques Principales Améliorées -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Établissements Overview -->
+        <div class="dashboard-card primary">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Établissements</p>
+                    <p class="text-3xl font-bold text-blue-700 mt-2">{{ stats.total_etablissements | format_number }}</p>
+                    <div class="grid grid-cols-1 gap-1 mt-3 text-sm">
+                        <div class="flex items-center">
+                            <span class="text-blue-600 font-bold">{{ stats.etablissements_publics }}</span>
+                            <span class="text-gray-600 ml-2">Publics</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-indigo-600 font-bold">{{ stats.etablissements_prives }}</span>
+                            <span class="text-gray-600 ml-2">Privés</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-purple-600 font-bold">{{ stats.etablissements_com_ass }}</span>
+                            <span class="text-gray-600 ml-2">Communautaires</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-icon primary">
+                    <i class="fas fa-school"></i>
+                </div>
+            </div>
+            <div class="mt-4 bg-blue-50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-blue-700">Taux de géolocalisation</span>
+                    <span class="text-blue-800 font-bold">95.9%</span>
+                </div>
+                <div class="mt-2">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 95.9%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personnel Overview -->
+        <div class="dashboard-card success">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Personnel Total</p>
+                    <p class="text-3xl font-bold text-green-700 mt-2">{{ stats.total_personnel | format_number }}</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="text-green-600 font-medium">{{ stats.personnel_affecte }}</span>
+                        <span class="text-gray-500 ml-1">affectés</span>
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-red-600 font-medium">{{ stats.personnel_non_affecte }}</span>
+                        <span class="text-gray-500 ml-1">non affectés</span>
+                    </div>
+                </div>
+                <div class="metric-icon success">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="mt-4 bg-green-50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-green-700">Taux d'affectation</span>
+                    <span class="text-green-800 font-bold">{{ (stats.personnel_affecte / stats.total_personnel * 100) | round(1) }}%</span>
+                </div>
+                <div class="mt-2">
+                    <div class="progress-bar">
+                        <div class="progress-fill bg-gradient-to-r from-green-500 to-green-600" style="width: {{ (stats.personnel_affecte / stats.total_personnel * 100) | round(1) }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicateurs de Performance -->
+        <div class="dashboard-card warning">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Performance Système</p>
+                    <div class="mt-2">
+                        {% set ratio_personnel = (stats.total_personnel / stats.total_etablissements) | round(1) %}
+                        <div class="flex justify-between items-center text-sm mb-1">
+                            <span class="text-gray-700 font-medium">Ratio Personnel/Étab.</span>
+                            <span class="text-orange-600 font-bold">{{ ratio_personnel }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-700 font-medium">Couverture territoriale</span>
+                            <span class="text-orange-600 font-bold">94.1%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-icon warning">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+            <div class="mt-4 bg-orange-50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-orange-700">État général</span>
+                    {% if ratio_personnel >= 3.5 %}
+                        <span class="status-badge status-excellent">Excellent</span>
+                    {% elif ratio_personnel >= 2.5 %}
+                        <span class="status-badge status-good">Bon</span>
+                    {% else %}
+                        <span class="status-badge status-warning">À améliorer</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Répartition Avancée -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Analyse par Secteur -->
+        <div class="analytics-widget">
+            <div class="border-b border-gray-200 pb-4 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-chart-pie mr-3 text-purple-600"></i>
+                    Répartition par Secteur
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Distribution des établissements selon leur statut</p>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Public -->
+                <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-purple-600 rounded-full mr-3"></div>
+                        <span class="font-medium text-gray-900">Secteur Public</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-purple-600">{{ stats.etablissements_publics }}</div>
+                        <div class="text-xs text-gray-500">établissements publics</div>
+                    </div>
+                </div>
+                
+                <!-- Privé -->
+                <div class="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-indigo-600 rounded-full mr-3"></div>
+                        <span class="font-medium text-gray-900">Secteur Privé</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-indigo-600">{{ stats.etablissements_prives }}</div>
+                        <div class="text-xs text-gray-500">établissements privés</div>
+                    </div>
+                </div>
+                
+                <!-- Communautaire -->
+                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-red-600 rounded-full mr-3"></div>
+                        <span class="font-medium text-gray-900">Secteur Communautaire</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-red-600">{{ stats.etablissements_com_ass }}</div>
+                        <div class="text-xs text-gray-500">établissements communautaires</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <canvas id="sectorChart" width="300" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Analyse Personnel par Genre -->
+        <div class="analytics-widget">
+            <div class="border-b border-gray-200 pb-4 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-venus-mars mr-3 text-pink-600"></i>
+                    Personnel par Genre
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Répartition et analyse de parité homme-femme</p>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Hommes -->
+                <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                            <i class="fas fa-male text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Personnel Masculin</div>
+                            <div class="text-xs text-gray-500">{{ (stats.personnel_hommes / stats.total_personnel * 100) | round(1) }}% du total</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-blue-600">{{ stats.personnel_hommes }}</div>
+                        <div class="text-xs text-gray-500">agents</div>
+                    </div>
+                </div>
+                
+                <!-- Femmes -->
+                <div class="flex items-center justify-between p-3 bg-pink-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-pink-100 rounded-lg mr-3">
+                            <i class="fas fa-female text-pink-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Personnel Féminin</div>
+                            <div class="text-xs text-gray-500">{{ (stats.personnel_femmes / stats.total_personnel * 100) | round(1) }}% du total</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-pink-600">{{ stats.personnel_femmes }}</div>
+                        <div class="text-xs text-gray-500">agents</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <canvas id="genderChart" width="300" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Rapides Améliorées -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div class="p-6 border-b border-gray-200 bg-gray-50">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-bolt mr-3 text-yellow-500"></i>
+                Actions Rapides & Navigation
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Accès direct aux fonctionnalités principales du système</p>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{{ url_for('etablissements.index') }}" class="action-btn">
+                    <i class="fas fa-school mr-3 text-blue-600"></i>
+                    <div>
+                        <div class="font-medium">Établissements</div>
+                        <div class="text-xs text-gray-500">Gérer les {{ stats.total_etablissements }} établissements</div>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('personnel.index') }}" class="action-btn">
+                    <i class="fas fa-users mr-3 text-green-600"></i>
+                    <div>
+                        <div class="font-medium">Personnel</div>
+                        <div class="text-xs text-gray-500">{{ stats.personnel_non_affecte }} à affecter</div>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('rapports.index') }}" class="action-btn">
+                    <i class="fas fa-chart-bar mr-3 text-purple-600"></i>
+                    <div>
+                        <div class="font-medium">Rapports</div>
+                        <div class="text-xs text-gray-500">Analyses et statistiques</div>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('rapports.synthese') }}" class="action-btn">
+                    <i class="fas fa-file-download mr-3 text-orange-600"></i>
+                    <div>
+                        <div class="font-medium">Export</div>
+                        <div class="text-xs text-gray-500">Rapport de synthèse</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicateurs de Performance Détaillés -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-200 bg-gray-50">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-analytics mr-3 text-indigo-600"></i>
+                Indicateurs de Performance Système
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Métriques clés pour le pilotage et l'aide à la décision</p>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Ratio Personnel/Établissement -->
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-balance-scale text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900">{{ (stats.total_personnel / stats.total_etablissements) | round(1) }}</div>
+                    <div class="text-sm text-gray-600">Personnel/Établissement</div>
+                    <div class="mt-2">
+                        {% set ratio = (stats.total_personnel / stats.total_etablissements) %}
+                        {% if ratio >= 4.0 %}
+                            <span class="status-badge status-excellent">Optimal</span>
+                        {% elif ratio >= 3.0 %}
+                            <span class="status-badge status-good">Bon</span>
+                        {% else %}
+                            <span class="status-badge status-warning">Insuffisant</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Taux de Géolocalisation -->
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-map-marker-alt text-green-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900">95.9%</div>
+                    <div class="text-sm text-gray-600">Géolocalisation</div>
+                    <div class="mt-2">
+                        <span class="status-badge status-excellent">Excellent</span>
+                    </div>
+                </div>
+                
+                <!-- Couverture Territoriale -->
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-globe text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900">94.1%</div>
+                    <div class="text-sm text-gray-600">Couverture Communale</div>
+                    <div class="mt-2">
+                        <span class="status-badge status-excellent">32/34 communes</span>
+                    </div>
+                </div>
+                
+                <!-- Taux de Féminisation -->
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-pink-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-female text-pink-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900">{{ (stats.personnel_femmes / stats.total_personnel * 100) | round(1) }}%</div>
+                    <div class="text-sm text-gray-600">Taux de Féminisation</div>
+                    <div class="mt-2">
+                        {% set taux_fem = (stats.personnel_femmes / stats.total_personnel * 100) %}
+                        {% if taux_fem >= 45 and taux_fem <= 55 %}
+                            <span class="status-badge status-excellent">Parité</span>
+                        {% elif taux_fem >= 35 %}
+                            <span class="status-badge status-good">Équilibré</span>
+                        {% else %}
+                            <span class="status-badge status-warning">Déséquilibré</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes
+    const cards = document.querySelectorAll('.dashboard-card, .analytics-widget');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Animation des barres de progression
+    setTimeout(() => {
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 100);
+        });
+    }, 800);
+    
+    // Graphique secteur
+    initSectorChart();
+    
+    // Graphique genre
+    initGenderChart();
+});
+
+function initSectorChart() {
+    const ctx = document.getElementById('sectorChart');
+    if (!ctx) return;
+    
+    new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Public', 'Privé', 'Communautaire'],
+            datasets: [{
+                data: [{{ stats.etablissements_publics }}, {{ stats.etablissements_prives }}, {{ stats.etablissements_com_ass }}],
+                backgroundColor: ['#8b5cf6', '#6366f1', '#ef4444'],
+                borderColor: '#ffffff',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        font: { size: 11 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function initGenderChart() {
+    const ctx = document.getElementById('genderChart');
+    if (!ctx) return;
+    
+    new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Hommes', 'Femmes'],
+            datasets: [{
+                label: 'Personnel',
+                data: [{{ stats.personnel_hommes }}, {{ stats.personnel_femmes }}],
+                backgroundColor: ['#3b82f6', '#ec4899'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = {{ stats.total_personnel }};
+                            const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed.y + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f3f4f6' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+// Fonction d'actualisation
+function refreshDashboard() {
+    showNotification('Actualisation en cours...', 'info');
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} mr-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IEF Louga - Plateforme d'Analyse{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        /* Style personnalisé inspiré de ChatGPT/Claude */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .navbar-glass {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .sidebar-glass {
+            backdrop-filter: blur(10px);
+            background-color: rgba(249, 250, 251, 0.95);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        /* Animation loading */
+        .loading-spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Scrollbar personnalisée */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="h-full bg-gray-50" x-data="{ sidebarOpen: false }">
+    
+    <!-- Navigation horizontale -->
+    <nav class="navbar-glass fixed top-0 w-full z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-graduation-cap text-2xl text-gradient mr-3"></i>
+                        <h1 class="text-xl font-bold text-gray-900">IEF Louga</h1>
+                    </div>
+                    
+                    <!-- Navigation principale -->
+                    <div class="hidden md:ml-8 md:flex md:space-x-8">
+                        <a href="{{ url_for('main.index') }}" 
+                           class="{% if request.endpoint and request.endpoint == 'main.index' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200">
+                            <i class="fas fa-tachometer-alt mr-2"></i>
+                            Dashboard
+                        </a>
+                        
+                        <a href="{{ url_for('etablissements.index') }}" 
+                           class="{% if request.endpoint and request.endpoint.startswith('etablissements.') %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200">
+                            <i class="fas fa-school mr-2"></i>
+                            Établissements
+                        </a>
+                        
+                        <a href="{{ url_for('personnel.index') }}" 
+                           class="{% if request.endpoint and request.endpoint.startswith('personnel.') %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200">
+                            <i class="fas fa-users mr-2"></i>
+                            Personnel
+                        </a>
+                        
+                        <a href="{{ url_for('rapports.index') }}" 
+                           class="{% if request.endpoint and request.endpoint.startswith('rapports.') %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            Rapports
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Actions droite -->
+                <div class="flex items-center space-x-4">
+                    <!-- Recherche -->
+                    <div class="relative hidden md:block">
+                        <input type="text" 
+                               placeholder="Rechercher..." 
+                               class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                               x-data="{ query: '' }"
+                               x-model="query"
+                               @keyup.enter="search(query)">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <button class="p-2 text-gray-400 hover:text-gray-500 transition-colors duration-200">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    
+                    <!-- Menu mobile -->
+                    <button @click="sidebarOpen = !sidebarOpen" class="md:hidden p-2 text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Sidebar mobile -->
+    <div class="md:hidden" x-show="sidebarOpen" @click.away="sidebarOpen = false" x-transition>
+        <div class="fixed inset-0 z-40 flex">
+            <div class="fixed inset-0 bg-gray-600 bg-opacity-75" @click="sidebarOpen = false"></div>
+            <div class="relative flex-1 flex flex-col max-w-xs w-full sidebar-glass">
+                <div class="absolute top-0 right-0 -mr-12 pt-2">
+                    <button @click="sidebarOpen = false" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                        <i class="fas fa-times text-white"></i>
+                    </button>
+                </div>
+                
+                <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                    <nav class="mt-5 px-2 space-y-1">
+                        <a href="{{ url_for('main.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-50">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+                        <a href="{{ url_for('etablissements.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-50">
+                            <i class="fas fa-school mr-3"></i>
+                            Établissements
+                        </a>
+                        <a href="{{ url_for('personnel.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-50">
+                            <i class="fas fa-users mr-3"></i>
+                            Personnel
+                        </a>
+                        <a href="{{ url_for('rapports.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-50">
+                            <i class="fas fa-chart-line mr-3"></i>
+                            Rapports
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenu principal -->
+    <main class="pt-16 min-h-screen">
+        <!-- Messages flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+                    {% for category, message in messages %}
+                        <div class="rounded-md p-4 mb-4 {% if category == 'error' %}bg-red-50 border border-red-200{% else %}bg-green-50 border border-green-200{% endif %}">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="{% if category == 'error' %}fas fa-exclamation-circle text-red-400{% else %}fas fa-check-circle text-green-400{% endif %}"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm {% if category == 'error' %}text-red-800{% else %}text-green-800{% endif %}">{{ message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Breadcrumb -->
+        {% block breadcrumb %}{% endblock %}
+        
+        <!-- Contenu de la page -->
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-graduation-cap text-indigo-600 mr-2"></i>
+                    <span class="text-gray-600">© 2025 IEF Louga - Plateforme d'Analyse</span>
+                </div>
+                <div class="flex space-x-4">
+                    <span class="text-sm text-gray-500">Version 1.0</span>
+                    <span class="text-sm text-gray-500">•</span>
+                    <span class="text-sm text-gray-500">Données mises à jour</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scripts globaux -->
+    <script>
+        // Fonction de recherche globale
+        function search(query) {
+            if (query.trim()) {
+                window.location.href = `/personnel/recherche?q=${encodeURIComponent(query)}`;
+            }
+        }
+        
+        // Animation au scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card-hover');
+            
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+            
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.6s ease';
+                observer.observe(card);
+            });
+        });
+        
+        // Fonction utilitaire pour formater les nombres
+        function formatNumber(num) {
+            return new Intl.NumberFormat('fr-FR').format(num);
+        }
+        
+        // Loading states
+        function showLoading(element) {
+            element.innerHTML = '<div class="loading-spinner mx-auto"></div>';
+        }
+        
+        function hideLoading(element, content) {
+            element.innerHTML = content;
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

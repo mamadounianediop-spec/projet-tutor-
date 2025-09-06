@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Analyses Détaillées - Personnel - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .metric-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- En-tête -->
+    <div class="mb-8">
+        <nav class="bg-white shadow-sm border-b mb-6" aria-label="Breadcrumb">
+            <div class="px-6 py-3">
+                <ol class="flex items-center space-x-2 text-sm">
+                    <li><a href="{{ url_for('main.index') }}" class="text-blue-600 hover:text-blue-800">Accueil</a></li>
+                    <li class="text-gray-500">/</li>
+                    <li><a href="{{ url_for('personnel.index') }}" class="text-blue-600 hover:text-blue-800">Personnel</a></li>
+                    <li class="text-gray-500">/</li>
+                    <li class="text-gray-900 font-medium">Analyses Détaillées</li>
+                </ol>
+            </div>
+        </nav>
+        
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-chart-bar mr-3 text-green-600"></i>
+                    Analyses Détaillées du Personnel
+                </h1>
+                <p class="text-gray-600 mt-2">Analyses approfondies et métriques de performance du personnel</p>
+            </div>
+            <button onclick="window.print()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center">
+                <i class="fas fa-print mr-2"></i>
+                Imprimer
+            </button>
+        </div>
+    </div>
+
+    <!-- Analyses par Corps -->
+    <div class="chart-container mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Analyses par Corps</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Corps</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hommes</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Femmes</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Affectés Étab.</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Affectés Service</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Établissements</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ancienneté Moy.</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for corps in analyses_corps %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ corps.corps }}</td>
+                        <td class="px-6 py-4 text-gray-900">{{ corps.total }}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ corps.hommes }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
+                                {{ corps.femmes }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ corps.affectes_etablissement }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {{ corps.affectes_service }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-900">{{ corps.etablissements_differents }}</td>
+                        <td class="px-6 py-4 text-gray-900">{{ "%.1f ans"|format(corps.anciennete_moyenne or 0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Analyses par Fonction -->
+    <div class="chart-container mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Analyses par Fonction</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {% for fonction in analyses_fonction[:12] %}
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-gray-900">{{ fonction.fonction }}</h3>
+                    <span class="text-lg font-bold text-green-600">{{ fonction.total }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-sm">
+                    <div class="text-center">
+                        <div class="text-blue-600 font-bold">{{ fonction.hommes }}</div>
+                        <div class="text-gray-500 text-xs">Hommes</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-pink-600 font-bold">{{ fonction.femmes }}</div>
+                        <div class="text-gray-500 text-xs">Femmes</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-green-600 font-bold">{{ fonction.affectes }}</div>
+                        <div class="text-gray-500 text-xs">Affectés</div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="flex items-center">
+                        <div class="flex-1 bg-gray-200 rounded-full h-2 mr-2">
+                            <div class="bg-green-600 h-2 rounded-full" style="width: {{ (fonction.affectes * 100.0 / fonction.total) if fonction.total > 0 else 0 }}%"></div>
+                        </div>
+                        <span class="text-xs text-gray-600">{{ "%.1f"|format((fonction.affectes * 100.0 / fonction.total) if fonction.total > 0 else 0) }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Analyses par Grade -->
+    <div class="chart-container mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Analyses par Grade</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Affectés</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taux d'Affectation</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for grade in analyses_grade %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ grade.grade }}</td>
+                        <td class="px-6 py-4 text-gray-900">{{ grade.total }}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ grade.affectes }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="flex-1 bg-gray-200 rounded-full h-2 mr-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ grade.taux_affectation }}%"></div>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-900">{{ grade.taux_affectation }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Qualifications -->
+    <div class="chart-container mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Répartition par Qualification Académique</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for qual in qualifications %}
+            <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-4 border border-indigo-200">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold text-gray-900 text-sm">{{ qual.diplome_academique }}</h3>
+                    <span class="text-xl font-bold text-indigo-600">{{ qual.total }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <div class="text-center">
+                        <div class="text-blue-600 font-bold">{{ qual.hommes }}</div>
+                        <div class="text-gray-500 text-xs">H</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-pink-600 font-bold">{{ qual.femmes }}</div>
+                        <div class="text-gray-500 text-xs">F</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Répartition Géographique -->
+    <div class="chart-container">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Répartition Géographique</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for geo in repartition_geo %}
+            <div class="bg-gray-50 rounded-lg p-6">
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">{{ geo.arrondissement }}</h3>
+                    <div class="text-3xl font-bold text-green-600">{{ geo.total_personnel }}</div>
+                    <div class="text-sm text-gray-600">agents</div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-sm text-center">
+                    <div>
+                        <div class="text-blue-600 font-bold">{{ geo.etablissements_avec_personnel }}</div>
+                        <div class="text-gray-500">Établissements</div>
+                    </div>
+                    <div>
+                        <div class="text-purple-600 font-bold">{{ geo.corps_differents }}</div>
+                        <div class="text-gray-500">Corps</div>
+                    </div>
+                    <div>
+                        <div class="text-orange-600 font-bold">{{ geo.personnel_par_etablissement or "N/A" }}</div>
+                        <div class="text-gray-500">P/É</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

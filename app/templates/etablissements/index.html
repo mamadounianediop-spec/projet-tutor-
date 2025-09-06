@@ -1,0 +1,812 @@
+{% extends "base.html" %}
+
+{% block title %}Établissements - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    .etablissement-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .etablissement-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, #059669, #047857);
+    }
+    
+    .etablissement-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+    }
+    
+    .etablissement-card.public::before { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .etablissement-card.prive::before { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    .etablissement-card.communautaire::before { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .status-public { 
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); 
+        color: #7c3aed; 
+        border: 1px solid #c4b5fd;
+    }
+    
+    .status-prive { 
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); 
+        color: #4f46e5; 
+        border: 1px solid #a5b4fc;
+    }
+    
+    .status-communautaire { 
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+        color: #d97706; 
+        border: 1px solid #fbbf24;
+    }
+    
+    .etablissement-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        color: white;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+    
+    .type-badge {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        color: #374151;
+        border: 1px solid #d1d5db;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .filter-advanced {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-advanced:hover {
+        border-color: #059669;
+        box-shadow: 0 8px 25px rgba(5, 150, 105, 0.1);
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #059669, #047857);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+    
+    .analytics-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .analytics-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-school mr-3 text-green-600"></i>
+                    Établissements Scolaires IEF Louga
+                </h1>
+                <p class="text-gray-600 mt-1">Gestion et supervision complète des établissements éducatifs</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-school mr-1 text-green-600"></i>
+                        <span class="font-bold text-green-600">{{ stats.total_etablissements }}</span>
+                        <span class="ml-1">établissements</span>
+                    </div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <div class="flex items-center">
+                        <i class="fas fa-landmark mr-1 text-purple-600"></i>
+                        <span class="font-bold text-purple-600">451</span>
+                        <span class="ml-1">publics</span>
+                    </div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <div class="flex items-center">
+                        <i class="fas fa-building mr-1 text-indigo-600"></i>
+                        <span class="font-bold text-indigo-600">163</span>
+                        <span class="ml-1">privés</span>
+                    </div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <div class="flex items-center">
+                        <i class="fas fa-hands-helping mr-1 text-orange-600"></i>
+                        <span class="font-bold text-orange-600">{{ stats.etablissements_com_ass }}</span>
+                        <span class="ml-1">communautaires</span>
+                    </div>
+                </div>
+                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Nouvel Établissement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Métriques Établissements Avancées -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Établissements -->
+        <div class="etablissement-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Établissements</p>
+                    <p class="text-3xl font-bold text-green-700 mt-2">{{ stats.total_etablissements | format_number }}</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="text-green-600 font-medium">{{ stats.total_communes or 34 }}</span>
+                        <span class="text-gray-500 ml-1">communes couvertes</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-green-100 rounded-xl">
+                    <i class="fas fa-school text-green-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 bg-green-50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-green-700">Taux de géolocalisation</span>
+                    <span class="text-green-800 font-bold">95.9%</span>
+                </div>
+                <div class="mt-2">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 95.9%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secteur Public -->
+        <div class="etablissement-card public">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Secteur Public</p>
+                    <p class="text-3xl font-bold text-purple-700 mt-2">451</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="text-purple-600 font-medium">58.6%</span>
+                        <span class="text-gray-500 ml-1">du total</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-purple-100 rounded-xl">
+                    <i class="fas fa-landmark text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 bg-purple-50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-purple-700">Personnel public</span>
+                    <span class="text-purple-800 font-bold">~1,669</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secteur Privé -->
+        <div class="etablissement-card prive">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Secteur Privé</p>
+                    <p class="text-3xl font-bold text-indigo-700 mt-2">163</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="text-indigo-600 font-medium">21.2%</span>
+                        <span class="text-gray-500 ml-1">du total</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-indigo-100 rounded-xl">
+                    <i class="fas fa-building text-indigo-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 bg-indigo-50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-indigo-700">Contribution privée</span>
+                    <span class="text-indigo-800 font-bold">Importante</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secteur Communautaire -->
+        <div class="etablissement-card communautaire">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Secteur Communautaire</p>
+                    <p class="text-3xl font-bold text-orange-700 mt-2">{{ stats.etablissements_com_ass | format_number }}</p>
+                    <div class="flex items-center mt-2 text-sm">
+                        <span class="text-orange-600 font-medium">{{ (stats.etablissements_com_ass / stats.total_etablissements * 100) | round(1) }}%</span>
+                        <span class="text-gray-500 ml-1">du total</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-orange-100 rounded-xl">
+                    <i class="fas fa-hands-helping text-orange-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 bg-orange-50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-orange-700">Engagement communautaire</span>
+                    <span class="text-orange-800 font-bold">Très actif</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres Avancés -->
+    <div class="filter-advanced p-6 mb-8">
+        <div class="border-b border-gray-200 pb-4 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-search-plus mr-3 text-green-600"></i>
+                Recherche et Filtres Avancés
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Recherchez et filtrez les établissements selon différents critères</p>
+        </div>
+        
+        <form method="GET" action="{{ url_for('etablissements.index') }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Recherche Globale</label>
+                    <div class="relative">
+                        <input type="text" name="search" value="{{ filters.search or '' }}" 
+                               placeholder="Nom, code établissement..." 
+                               onkeyup="delayedSubmit()"
+                               class="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors">
+                        <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                    <select name="statut" onchange="this.form.submit()" class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors">
+                        <option value="">🏫 Tous les statuts</option>
+                        <option value="Public" {{ 'selected' if filters.statut == 'Public' else '' }}>🏛️ Public</option>
+                        <option value="Privé" {{ 'selected' if filters.statut == 'Privé' else '' }}>🏢 Privé</option>
+                        <option value="Com_Ass" {{ 'selected' if filters.statut == 'Com_Ass' else '' }}>🤝 Communautaire</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select name="type_etablissement" onchange="this.form.submit()" class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors">
+                        <option value="">📚 Tous les types</option>
+                        {% for type in types_etablissements %}
+                        <option value="{{ type.type_etablissement }}" 
+                                {{ 'selected' if filters.type_etablissement == type.type_etablissement else '' }}>
+                            {{ type.type_etablissement }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Commune</label>
+                    <select name="commune_id" onchange="this.form.submit()" class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition-colors">
+                        <option value="">📍 Toutes les communes</option>
+                        {% for commune in communes_list %}
+                        <option value="{{ commune.id }}" 
+                                {{ 'selected' if filters.commune_id == commune.id|string else '' }}>
+                            {{ commune.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Actions</label>
+                    <div class="flex flex-col gap-2">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                            <i class="fas fa-search mr-2"></i>
+                            Rechercher
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        
+        <div class="mt-6 flex flex-wrap gap-3">
+            <button onclick="resetFilters()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center">
+                <i class="fas fa-times mr-2"></i>
+                Réinitialiser
+            </button>
+            <button onclick="exportEtablissements()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center">
+                <i class="fas fa-file-excel mr-2"></i>
+                Export Excel
+            </button>
+            <button onclick="generateStats()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center">
+                <i class="fas fa-chart-bar mr-2"></i>
+                Analyses Détaillées
+            </button>
+            <button onclick="viewMap()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center">
+                <i class="fas fa-map mr-2"></i>
+                Carte Interactive
+            </button>
+        </div>
+    </div>
+
+    <!-- Tableau Établissements Professionnel -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-list mr-3 text-green-600"></i>
+                        Répertoire des Établissements
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        <span id="etablissements-count" class="font-bold text-green-600">{{ etablissements|length }}</span> 
+                        établissements trouvés
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-purple-600 font-medium">451</span> publics
+                        <span class="text-gray-400 mx-1">•</span>
+                        <span class="text-indigo-600 font-medium">163</span> privés
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-orange-600 font-medium">{{ stats.etablissements_com_ass }}</span> communautaires
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-500">Affichage:</span>
+                        <select class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:border-green-500">
+                            <option>25 par page</option>
+                            <option>50 par page</option>
+                            <option>100 par page</option>
+                            <option>Tous</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors" title="Vue liste">
+                            <i class="fas fa-list text-sm"></i>
+                        </button>
+                        <button class="w-8 h-8 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-colors" title="Vue cartes">
+                            <i class="fas fa-th text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="etablissements-table">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-2 cursor-pointer hover:text-green-600 transition-colors">
+                                <span>Établissement</span>
+                                <i class="fas fa-sort text-gray-400"></i>
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-2 cursor-pointer hover:text-green-600 transition-colors">
+                                <span>Type & Statut</span>
+                                <i class="fas fa-sort text-gray-400"></i>
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localisation</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Personnel</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="etablissements-tbody">
+                    {% for etablissement in etablissements %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150 border-l-4 border-transparent hover:border-green-500">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="etablissement-avatar mr-4" style="background: {% if etablissement.statut == 'Public' %}linear-gradient(135deg, #8b5cf6, #7c3aed){% elif etablissement.statut == 'Privé' %}linear-gradient(135deg, #6366f1, #4f46e5){% else %}linear-gradient(135deg, #f59e0b, #d97706){% endif %}">
+                                    {{ (etablissement.nom[:2]) if etablissement.nom else 'ET' }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-gray-900">
+                                        {{ etablissement.nom or 'Nom non défini' }}
+                                    </div>
+                                    {% if etablissement.code_etablissement %}
+                                    <div class="text-xs text-gray-500 flex items-center mt-1">
+                                        <i class="fas fa-barcode mr-1"></i>
+                                        Code: {{ etablissement.code_etablissement }}
+                                    </div>
+                                    {% endif %}
+                                    {% if etablissement.adresse %}
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                        {{ etablissement.adresse[:30] }}{{ '...' if etablissement.adresse|length > 30 else '' }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="space-y-2">
+                                {% if etablissement.type_etablissement %}
+                                <div class="type-badge">
+                                    <i class="fas fa-graduation-cap mr-1"></i>
+                                    {{ etablissement.type_etablissement }}
+                                </div>
+                                {% endif %}
+                                {% if etablissement.statut %}
+                                <div>
+                                    <span class="status-badge {% if etablissement.statut == 'Public' %}status-public{% elif etablissement.statut == 'Privé' %}status-prive{% else %}status-communautaire{% endif %}">
+                                        {% if etablissement.statut == 'Public' %}
+                                            <i class="fas fa-landmark mr-1"></i>
+                                        {% elif etablissement.statut == 'Privé' %}
+                                            <i class="fas fa-building mr-1"></i>
+                                        {% else %}
+                                            <i class="fas fa-hands-helping mr-1"></i>
+                                        {% endif %}
+                                        {{ etablissement.statut }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-start space-x-2">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="fas fa-map-marker-alt text-blue-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    {% if etablissement.commune_nom %}
+                                    <div class="text-sm font-medium text-gray-900">{{ etablissement.commune_nom }}</div>
+                                    {% elif etablissement.commune %}
+                                    <div class="text-sm font-medium text-gray-900">{{ etablissement.commune.nom }}</div>
+                                    {% else %}
+                                    <div class="text-sm text-gray-500 italic">Commune non définie</div>
+                                    {% endif %}
+                                    
+                                    {% if etablissement.latitude and etablissement.longitude %}
+                                    <div class="text-xs text-green-600 flex items-center mt-1">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Géolocalisé
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        {{ "%.4f"|format(etablissement.latitude) }}, {{ "%.4f"|format(etablissement.longitude) }}
+                                    </div>
+                                    {% else %}
+                                    <div class="text-xs text-orange-600 flex items-center mt-1">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Non géolocalisé
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">{{ etablissement.personnel_count or 0 }}</div>
+                                <div class="text-xs text-gray-500">agents</div>
+                                {% if etablissement.personnel_count and etablissement.personnel_count > 0 %}
+                                <div class="mt-2">
+                                    <span class="status-badge status-excellent">
+                                        <i class="fas fa-users mr-1"></i>
+                                        Équipé
+                                    </span>
+                                </div>
+                                {% else %}
+                                <div class="mt-2">
+                                    <span class="status-badge status-warning">
+                                        <i class="fas fa-exclamation mr-1"></i>
+                                        Sans personnel
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% set score = 85 if etablissement.personnel_count and etablissement.personnel_count > 0 else 30 %}
+                            {% if etablissement.latitude and etablissement.longitude %}
+                                {% set score = score + 15 %}
+                            {% endif %}
+                            <div class="flex items-center space-x-2">
+                                {% if score > 80 %}
+                                <div class="status-badge status-excellent">
+                                    <i class="fas fa-star mr-1"></i>
+                                    Excellent
+                                </div>
+                                {% elif score > 60 %}
+                                <div class="status-badge status-good">
+                                    <i class="fas fa-star-half-alt mr-1"></i>
+                                    Bon
+                                </div>
+                                {% else %}
+                                <div class="status-badge status-warning">
+                                    <i class="fas fa-exclamation mr-1"></i>
+                                    À améliorer
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ score }}%"></div>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">Score: {{ score }}%</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="viewEtablissement('{{ etablissement.id }}')" 
+                                        class="w-8 h-8 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center transition-colors"
+                                        title="Voir détails">
+                                    <i class="fas fa-eye text-sm"></i>
+                                </button>
+                                <button onclick="editEtablissement('{{ etablissement.id }}')" 
+                                        class="w-8 h-8 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-colors"
+                                        title="Modifier">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </button>
+                                <button onclick="viewPersonnel('{{ etablissement.id }}')" 
+                                        class="w-8 h-8 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-600 flex items-center justify-center transition-colors"
+                                        title="Personnel">
+                                    <i class="fas fa-users text-sm"></i>
+                                </button>
+                                <button onclick="generateFiche('{{ etablissement.id }}')" 
+                                        class="w-8 h-8 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-600 flex items-center justify-center transition-colors"
+                                        title="Fiche établissement">
+                                    <i class="fas fa-file-alt text-sm"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if pagination and pagination.total_pages > 1 %}
+        <div class="bg-white px-6 py-4 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    {% if pagination.has_prev %}
+                        <a href="{{ url_for('etablissements.index', page=pagination.prev_num, **filters) }}" 
+                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                           Précédent
+                        </a>
+                    {% endif %}
+                    {% if pagination.has_next %}
+                        <a href="{{ url_for('etablissements.index', page=pagination.next_num, **filters) }}" 
+                           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                           Suivant
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Affichage de <span class="font-medium text-green-600">{{ (pagination.page - 1) * pagination.per_page + 1 }}</span> à 
+                            <span class="font-medium text-green-600">{{ pagination.page * pagination.per_page if pagination.page * pagination.per_page <= pagination.total else pagination.total }}</span> 
+                            sur <span class="font-medium text-green-600">{{ pagination.total }}</span> résultats
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            {% if pagination.has_prev %}
+                                <a href="{{ url_for('etablissements.index', page=pagination.prev_num, **filters) }}" 
+                                   class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            {% endif %}
+                            
+                            {% for page_num in pagination.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != pagination.page %}
+                                        <a href="{{ url_for('etablissements.index', page=page_num, **filters) }}" 
+                                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                           {{ page_num }}
+                                        </a>
+                                    {% else %}
+                                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-green-600 text-sm font-medium text-white">
+                                            {{ page_num }}
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500">
+                                        ...
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if pagination.has_next %}
+                                <a href="{{ url_for('etablissements.index', page=pagination.next_num, **filters) }}" 
+                                   class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Variables globales
+let currentFilters = {};
+let searchTimeout;
+
+function delayedSubmit() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        document.querySelector('form').submit();
+    }, 1000); // Attendre 1 seconde après la dernière frappe
+}
+
+function resetFilters() {
+    showLoadingAnimation();
+    setTimeout(() => {
+        window.location.href = '/etablissements/';
+    }, 300);
+}
+
+function exportEtablissements() {
+    const params = new URLSearchParams(window.location.search);
+    params.append('export', 'excel');
+    
+    showNotification('Export en cours...', 'info');
+    setTimeout(() => {
+        window.location.href = '/api/etablissements/export?' + params.toString();
+    }, 1000);
+}
+
+function generateStats() {
+    showNotification('Génération des analyses...', 'info');
+    window.open('/etablissements/analytics', '_blank');
+}
+
+function viewMap() {
+    showNotification('Ouverture de la carte...', 'info');
+    window.open('/etablissements/carte', '_blank');
+}
+
+function viewEtablissement(etablissementId) {
+    window.open(`/etablissements/${etablissementId}`, '_blank');
+}
+
+function editEtablissement(etablissementId) {
+    showNotification('Module d\'édition en cours de développement', 'info');
+}
+
+function viewPersonnel(etablissementId) {
+    window.location.href = `/personnel/?etablissement_id=${etablissementId}`;
+}
+
+function generateFiche(etablissementId) {
+    window.open(`/etablissements/${etablissementId}/fiche`, '_blank');
+}
+
+function showLoadingAnimation() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Chargement...';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 1000);
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} mr-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes
+    const etablissementCards = document.querySelectorAll('.etablissement-card');
+    etablissementCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+    // Animation des barres de progression
+    const progressBars = document.querySelectorAll('.progress-fill');
+    setTimeout(() => {
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 100);
+        });
+    }, 1000);
+    
+    // Animation des lignes du tableau
+    const tableRows = document.querySelectorAll('#etablissements-tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.4s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, (index * 50) + 800);
+    });
+});
+
+// Raccourcis clavier
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        document.querySelector('input[name="search"]').focus();
+    }
+    
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        resetFilters();
+    }
+    
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        exportEtablissements();
+    }
+});
+</script>
+{% endblock %}

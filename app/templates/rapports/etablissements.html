@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse des Établissements - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-header {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .analysis-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- En-tête -->
+    <div class="report-header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">
+                    <i class="fas fa-school mr-3"></i>
+                    Analyse des Établissements
+                </h1>
+                <p class="text-green-100 mt-2">Répartition et analyse détaillée des établissements</p>
+            </div>
+            <button onclick="window.print()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                <i class="fas fa-print mr-2"></i>
+                Imprimer
+            </button>
+        </div>
+    </div>
+
+    <!-- Géolocalisation -->
+    <div class="analysis-card">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">État de la Géolocalisation</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600">{{ donnees.geo_analyse.total }}</div>
+                <div class="text-sm text-gray-600">Total Établissements</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-600">{{ donnees.geo_analyse.avec_coordonnees }}</div>
+                <div class="text-sm text-gray-600">Géolocalisés</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-orange-600">{{ donnees.geo_analyse.taux_geolocalisation }}%</div>
+                <div class="text-sm text-gray-600">Taux de Couverture</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analyse Type/Statut -->
+    <div class="analysis-card">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Répartition par Type et Statut</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in donnees.analyse_type_statut %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium">{{ item.type_etablissement }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if item.statut == 'Public' %}bg-blue-100 text-blue-800
+                                {% elif item.statut == 'Privé' %}bg-purple-100 text-purple-800
+                                {% else %}bg-orange-100 text-orange-800{% endif %}">
+                                {{ item.statut }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-900">{{ item.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Responsables -->
+    <div class="analysis-card">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations de Contact</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">{{ donnees.responsables_analyse.avec_directeur }}</div>
+                <div class="text-sm text-gray-600">Avec Directeur</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">{{ donnees.responsables_analyse.avec_contact }}</div>
+                <div class="text-sm text-gray-600">Avec Contact</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">{{ donnees.responsables_analyse.avec_email }}</div>
+                <div class="text-sm text-gray-600">Avec Email</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">{{ donnees.responsables_analyse.total }}</div>
+                <div class="text-sm text-gray-600">Total</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Rapport de Synthèse Générale - IEF Louga{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-chart-pie mr-3 text-blue-600"></i>
+                    Rapport de Synthèse Générale
+                </h1>
+                <p class="text-gray-600 mt-1">Vue d'ensemble complète de l'IEF Louga</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="window.print()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                    <i class="fas fa-print mr-2"></i>
+                    Imprimer
+                </button>
+                <button onclick="exportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                    <i class="fas fa-file-pdf mr-2"></i>
+                    Export PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Chiffres Clés -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="metric-card">
+            <div class="text-3xl font-bold text-blue-600 mb-2">{{ donnees.chiffres_cles.total_etablissements }}</div>
+            <div class="text-sm text-gray-600">Établissements</div>
+            <div class="mt-2 text-xs text-green-600">
+                <i class="fas fa-check-circle mr-1"></i>
+                Actifs
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="text-3xl font-bold text-green-600 mb-2">{{ donnees.chiffres_cles.total_personnel }}</div>
+            <div class="text-sm text-gray-600">Personnel</div>
+            <div class="mt-2 text-xs text-blue-600">
+                <i class="fas fa-users mr-1"></i>
+                En service
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="text-3xl font-bold text-purple-600 mb-2">{{ donnees.chiffres_cles.total_communes }}</div>
+            <div class="text-sm text-gray-600">Communes</div>
+            <div class="mt-2 text-xs text-orange-600">
+                <i class="fas fa-map-marker-alt mr-1"></i>
+                Couvertes
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="text-3xl font-bold text-indigo-600 mb-2">{{ "%.1f"|format((donnees.chiffres_cles.total_personnel / donnees.chiffres_cles.total_etablissements)) }}</div>
+            <div class="text-sm text-gray-600">Ratio P/E</div>
+            <div class="mt-2 text-xs text-gray-500">
+                <i class="fas fa-calculator mr-1"></i>
+                Personnel/Établissement
+            </div>
+        </div>
+    </div>
+
+    <!-- Répartition des Établissements -->
+    <div class="chart-container">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Répartition des Établissements par Type</h3>
+            <button class="text-blue-600 hover:text-blue-800">
+                <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+                <canvas id="etablissementsChart" width="400" height="300"></canvas>
+            </div>
+            <div class="space-y-3">
+                {% for type in donnees.etablissements_par_type %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full mr-3" style="background: hsl({{ loop.index0 * 40 }}, 70%, 60%)"></div>
+                        <span class="font-medium">{{ type.type_etablissement }}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-gray-900">{{ type.count }}</div>
+                        <div class="text-sm text-gray-500">{{ type.pourcentage }}%</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Communes -->
+    <div class="chart-container">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Top 10 Communes par Nombre d'Établissements</h3>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Commune</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Arrondissement</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Établissements</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Personnel</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ratio</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for commune in donnees.top_communes %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ commune.commune }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ commune.arrondissement }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ commune.nombre_etablissements }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ commune.nombre_personnel }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                            {{ "%.1f"|format(commune.nombre_personnel / commune.nombre_etablissements) if commune.nombre_etablissements > 0 else "0" }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Évolution des Effectifs -->
+    <div class="chart-container">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Évolution des Effectifs</h3>
+        <canvas id="evolutionChart" width="800" height="400"></canvas>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique en secteurs des établissements
+const etablissementsData = {
+    labels: [{% for type in donnees.etablissements_par_type %}'{{ type.type_etablissement }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+        data: [{% for type in donnees.etablissements_par_type %}{{ type.count }}{% if not loop.last %},{% endif %}{% endfor %}],
+        backgroundColor: [
+            {% for type in donnees.etablissements_par_type %}
+            'hsl({{ loop.index0 * 40 }}, 70%, 60%)'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }]
+};
+
+new Chart(document.getElementById('etablissementsChart'), {
+    type: 'doughnut',
+    data: etablissementsData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Graphique d'évolution
+const evolutionData = {
+    labels: [{% for item in donnees.evolution_effectifs %}'{{ item.annee }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+        label: 'Établissements',
+        data: [{% for item in donnees.evolution_effectifs %}{{ item.etablissements }}{% if not loop.last %},{% endif %}{% endfor %}],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4
+    }, {
+        label: 'Personnel',
+        data: [{% for item in donnees.evolution_effectifs %}{{ item.personnel }}{% if not loop.last %},{% endif %}{% endfor %}],
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        tension: 0.4
+    }]
+};
+
+new Chart(document.getElementById('evolutionChart'), {
+    type: 'line',
+    data: evolutionData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false
+            }
+        }
+    }
+});
+
+function exportPDF() {
+    window.print();
+}
+</script>
+
+{% endblock %}
