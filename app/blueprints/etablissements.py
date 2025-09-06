@@ -66,6 +66,8 @@ def index():
     etablissements_query = """
         SELECT 
             e.*,
+            e.coordonnees_x as longitude,
+            e.coordonnees_y as latitude,
             c.nom as commune_nom,
             COUNT(p.id) as personnel_count
         FROM etablissements e
