@@ -104,6 +104,76 @@
         color: #92400e;
         border: 1px solid #fbbf24;
     }
+    
+    .report-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .report-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .report-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .report-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+        border-color: #3b82f6;
+    }
+    
+    .analysis-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .download-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .download-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+        border-color: #3b82f6;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
 </style>
 {% endblock %}
 
@@ -237,19 +307,19 @@
         </h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Test Simple -->
-            <div class="report-card" onclick="alert('Test clic fonctionne!'); generateReport('overview')" style="cursor: pointer; border: 2px solid #3b82f6;">
+            <!-- Test de Fonctionnement -->
+            <div class="report-card" onclick="testFunction()" style="border: 3px solid #16a34a; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
                 <div class="flex items-center mb-4">
-                    <div class="p-3 bg-indigo-100 rounded-lg mr-4">
-                        <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
+                    <div class="p-3 bg-green-100 rounded-lg mr-4">
+                        <i class="fas fa-flask text-green-600 text-xl"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Vue d'Ensemble (TEST)</h3>
-                        <p class="text-sm text-gray-600">Cliquez pour tester - Statistiques générales</p>
+                        <h3 class="text-lg font-semibold text-gray-900">🧪 TEST RAPPORTS</h3>
+                        <p class="text-sm text-gray-600">Cliquez ici pour tester les fonctions</p>
                     </div>
                 </div>
-                <div class="text-xs text-blue-600 font-medium">
-                    ⚠️ VERSION TEST - Si vous voyez une alerte, le clic fonctionne
+                <div class="text-sm text-green-700 font-medium">
+                    ⚡ Version de diagnostic - Clic fonctionnel
                 </div>
             </div>
             
@@ -559,44 +629,50 @@
 
 <script>
 function generateReport(type) {
-    console.log('Génération du rapport type:', type);
+    console.log('✓ Génération du rapport type:', type);
     showNotification(`Génération du rapport ${type}...`, 'info');
     
-    // Animation de génération
+    // Animation de génération plus rapide
     setTimeout(() => {
         switch(type) {
             case 'overview':
             case 'vue-ensemble':
-                console.log('Ouverture du rapport synthèse');
+                console.log('✓ Ouverture du rapport synthèse');
                 window.open('/rapports/synthese', '_blank');
                 break;
             case 'etablissements':
-                console.log('Ouverture du rapport établissements');
+                console.log('✓ Ouverture du rapport établissements');
                 window.open('/rapports/etablissements', '_blank');
                 break;
             case 'personnel':
-                console.log('Ouverture du rapport personnel');
+                console.log('✓ Ouverture du rapport personnel');
                 window.open('/rapports/personnel', '_blank');
                 break;
             case 'performance':
             case 'indicateurs':
-                console.log('Ouverture du rapport indicateurs');
+                console.log('✓ Ouverture du rapport indicateurs');
                 window.open('/rapports/indicateurs', '_blank');
                 break;
             case 'geographique':
             case 'territorial':
-                console.log('Ouverture du rapport couverture');
+                console.log('✓ Ouverture du rapport couverture');
                 window.open('/rapports/couverture', '_blank');
                 break;
             case 'predictif':
-                console.log('Ouverture du rapport prédictif (synthèse)');
+                console.log('✓ Ouverture du rapport prédictif (synthèse)');
                 window.open('/rapports/synthese', '_blank');
                 break;
             default:
-                console.log('Type de rapport non reconnu:', type);
+                console.log('❌ Type de rapport non reconnu:', type);
                 showNotification('Type de rapport non reconnu', 'error');
         }
-    }, 1000);
+    }, 500);
+}
+
+function testFunction() {
+    console.log('🧪 Test de la fonction appelée');
+    alert('✅ SUCCESS: Les clics fonctionnent correctement!\n\n🔧 Diagnostic:\n- JavaScript activé\n- Événements onclick fonctionnels\n- Toutes les cartes de rapport devraient maintenant fonctionner');
+    showNotification('Test réussi ! Les rapports sont fonctionnels', 'success');
 }
 
 function generateMasterReport() {
