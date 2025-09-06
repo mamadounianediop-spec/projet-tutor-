@@ -444,10 +444,10 @@
                                     <div class="text-sm font-bold text-gray-900">
                                         {{ etablissement.nom or 'Nom non défini' }}
                                     </div>
-                                    {% if etablissement.code_etablissement %}
+                                    {% if etablissement.code %}
                                     <div class="text-xs text-gray-500 flex items-center mt-1">
                                         <i class="fas fa-barcode mr-1"></i>
-                                        Code: {{ etablissement.code_etablissement }}
+                                        Code: {{ etablissement.code }}
                                     </div>
                                     {% endif %}
                                     {% if etablissement.adresse %}
@@ -497,7 +497,7 @@
                                     <div class="text-sm text-gray-500 italic">Commune non définie</div>
                                     {% endif %}
                                     
-                                    {% if etablissement.zone %}
+                                    {% if etablissement.zone and etablissement.zone != 'NULL' %}
                                     <div class="text-xs text-blue-600 flex items-center mt-1">
                                         <i class="fas fa-map mr-1"></i>
                                         Zone: {{ etablissement.zone }}

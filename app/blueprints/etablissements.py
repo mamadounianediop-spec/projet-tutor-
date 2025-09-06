@@ -65,7 +65,9 @@ def index():
     # Construction de la requête pour les établissements
     etablissements_query = """
         SELECT 
-            e.*,
+            e.id, e.nom, e.code, e.type_etablissement, e.cycle, e.statut, 
+            e.type_statut, e.commune_id, e.zone, e.adresse, e.directeur, e.contact_1, 
+            e.contact_2, e.email_directeur, e.date_creation, e.date_ouverture, e.observations,
             e.coordonnees_x as longitude,
             e.coordonnees_y as latitude,
             c.nom as commune_nom,
